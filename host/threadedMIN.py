@@ -35,7 +35,7 @@ def wait_for_frames(min_handler: ThreadsafeTransportMINSerialHandler):
 
 if __name__ == "__main__":
     min_handler = ThreadsafeTransportMINSerialHandler(port=MIN_PORT)
-    #min_id = 0x05
+    min_id = 0x05
     while True:
         #payload = bytes("hello world {}".format(time()), encoding='ascii')
         #min_handler.queue_frame(min_id=min_id, payload=payload)
