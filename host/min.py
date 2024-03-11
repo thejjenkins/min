@@ -42,7 +42,7 @@ class MINFrame:
         if ack_or_reset:
             self.min_id = min_id
         else:
-            self.min_id = min_id & 0x3F
+            self.min_id = min_id & 0x3F # bit-wise AND 0011 1111
         self.payload = payload
         self.seq = seq
         self.is_transport = transport
@@ -74,12 +74,12 @@ class MINTransport:
     def _serial_close(self):
         raise NotImplementedError
 
-    ACK = 0xFF
-    RESET = 0xFE
+    ACK = 0xFF      # 1111 1111
+    RESET = 0xFE    # 1111 1110
 
-    HEADER_BYTE = 0xAA
-    STUFF_BYTE = 0x55
-    EOF_BYTE = 0x55
+    HEADER_BYTE = 0xAA      # 1010 1010
+    STUFF_BYTE = 0x55       # 0101 0101
+    EOF_BYTE = 0x55         # 0101 0101
 
     SEARCHING_FOR_SOF = 0
     RECEIVING_ID_CONTROL = 1
@@ -277,7 +277,10 @@ class MINTransport:
         """
         if len(payload) not in range(256):
             raise ValueError("MIN payload too large")
-        if min_id not in range(64):
+        if min_id == 254:
+            self.transport_reset()
+            return
+        elif min_id not in range(64):
             raise ValueError("MIN ID out of range")
         # Frame put into the transport FIFO
         if len(self._transport_fifo) < self.transport_fifo_size:
@@ -298,7 +301,7 @@ class MINTransport:
 
         Because this runs on a host with plenty of CPU time and memory
         we stash out-of-order frames and send negative acknowledgements (NACKs) to ask
-        sfor missing ones. This greatly improves the performance in the presence
+        for missing ones. This greatly improves the performance in the presence
         of line noise: a dropped frame will be specifically requested to be resent a
         nd then the stashed frames appended in the right order.
 
@@ -433,7 +436,7 @@ class MINTransport:
                     # If the frames come within the window size in the future sequence
                     # range then we accept them and assume some were missing
                     # (They may also be duplicates, in which case we store them over
-                    # sthe top of the old ones)
+                    # the top of the old ones)
                     if (min_seq - self._rn) & 0xFF < self.rx_window_size:
                         # We want to only NACK a range of frames once,
                         # not each time otherwise we will overload with retransmissions
