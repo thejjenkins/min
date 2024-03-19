@@ -61,8 +61,8 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-// #include <Arduino.h>
-// #include <stdarg.h>
+#include <string.h>
+#include <stdlib.h>
 
 #ifdef ASSERTION_CHECKING
 #include <assert.h>
@@ -181,7 +181,8 @@ void min_transport_reset(struct min_context *self, bool inform_other_side);
 
 // CALLBACK. Handle incoming MIN frame
 void min_application_handler(struct min_context *self, uint8_t min_id, uint8_t const *min_payload, uint8_t len_payload, uint8_t port);
-
+// Concatenates src memory block at the end of dest memory block.
+void memcat(void *dest, size_t destLen, const void *src, size_t srcLen);
 #ifdef TRANSPORT_PROTOCOL
 // CALLBACK. Must return current time in milliseconds.
 // Typically a tick timer interrupt will increment a 32-bit variable every 1ms (e.g. SysTick on Cortex M ARM devices).

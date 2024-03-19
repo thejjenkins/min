@@ -1,7 +1,7 @@
 //
-// Example program for the Arduino M0 Pro (based on Atmel SAMD21)
+// Example program for the Arduino UNO
 //
-// Uses Serial for programming the board and debug printing, and SerialUSB for
+// Uses Serial for programming the board and debug printing, and altSoftSerial for
 // running the MIN protocol. A programming running on a PC in Python is used to
 // exercise this code.
 //
@@ -54,19 +54,21 @@ uint32_t min_time_ms(void)
   return millis();
 }
 
-// Handle the reception of a MIN frame. This is the main interface to MIN for receiving
-// frames. It's called whenever a valid frame has been received (for transport layer frames
-// duplicates will have been eliminated).
-// void min_application_handler(uint8_t min_id, uint8_t *min_payload, uint8_t len_payload, uint8_t port)
+// // Handle the reception of a MIN frame. This is the main interface to MIN for receiving
+// // frames. It's called whenever a valid frame has been received (for transport layer frames
+// // duplicates will have been eliminated).
+// void min_application_handler(struct min_ctx, uint8_t min_id, uint8_t const *min_payload, uint8_t len_payload, uint8_t port)
 // {
-//   // In this simple example application we just echo the frame back when we get one, with the MIN ID
-//   // one more than the incoming frame.
+//   // In this example we examine the MIN ID and perform an action based on its value.
+//   // If ID = 5 then return "ID was 5"
+//   // If ID = 6 then return "ID was 6"
+//   // If ID = 7 then return "ID was 7"
 //   //
 //   // We ignore the port because we have one context, but we could use it to index an array of
 //   // contexts in a bigger application.
-//   Serial.print("MIN frame with ID ");
-//   Serial.print(min_id);
-//   Serial.print(" received at ");
+//   Serial.println("MIN frame with ID %d", min_id);
+//   Serial.println(min_id);
+//   Serial.println(" received at %d\n", millis());
 //   Serial.println(millis());
 //   min_id++;
 //   // The frame echoed back doesn't go through the transport protocol: it's send back directly
@@ -98,7 +100,6 @@ void loop() {
   char buf[32]; // each char is 1 byte so this is 32 bytes
   size_t buf_len;
 
-
   // Read some bytes from the USB serial port..
   if(altSerial.available() > 0) {
     //Serial.println("Working?");
@@ -119,7 +120,7 @@ void loop() {
   // Every 1s send a MIN frame using the reliable transport stream.
   uint32_t now = millis();
   // // Use modulo arithmetic so that it will continue to work when the time value wraps
-  if (now - last_sent > 1000U) {
+  if (now - last_sent > 2000U) {
     Serial.println(min_ctx.rx_frame_id_control);
     Serial.println(min_ctx.rx_frame_seq);
     Serial.println(min_ctx.transport_fifo.rn);
@@ -130,13 +131,13 @@ void loop() {
     // around to decode it. It's a good idea to stick to MIN network ordering (i.e. big
     // endian) for payload words but this would make this example program more complex.
     //Serial.println(min_ctx.transport_fifo.n_frames);
-    if(!min_queue_frame(&min_ctx, 0x33U, (uint8_t *)&now, 4U)) {
-      // The queue has overflowed for some reason
-      Serial.print("Can't queue at time ");
-      Serial.println(millis());
-      //Serial.println(min_ctx.transport_fifo.dropped_frames);
-      //min_tx_byte(&altSerial, '1');
-    }
+    // if(!min_queue_frame(&min_ctx, 0x33U, (uint8_t *)&now, 4U)) {
+    //   // The queue has overflowed for some reason
+    //   Serial.print("Can't queue at time ");
+    //   Serial.println(millis());
+    //   //Serial.println(min_ctx.transport_fifo.dropped_frames);
+    //   //min_tx_byte(&altSerial, '1');
+    // }
     last_sent = now;
   }
 }

@@ -3,7 +3,7 @@
 // Use authorized under the MIT license.
 
 #include "min.h"
-#include <Arduino.h>
+//#include <Arduino.h>
 
 //#define MIN_DEBUG_PRINTING
 #define TRANSPORT_FIFO_SIZE_FRAMES_MASK ((uint8_t)((1U << TRANSPORT_FIFO_SIZE_FRAMES_BITS) - 1U))
@@ -448,10 +448,15 @@ static void valid_frame_received(struct min_context *self)
 #endif // TRANSPORT_PROTOCOL
 }
 
+// Handle the reception of a MIN frame. This is the main interface to MIN for receiving
+// frames. It's called whenever a valid frame has been received (for transport layer frames
+// duplicates will have been eliminated).
 void min_application_handler(struct min_context *self, uint8_t min_id, uint8_t const *min_payload, uint8_t len_payload, uint8_t port)
 {
-  // In this simple example application we just echo the frame back when we get one, with the MIN ID
-  // one more than the incoming frame.
+  // In this example we examine the MIN ID and perform an action based on its value.
+  // If ID = 5 then return "ID was 5"
+  // If ID = 6 then return "ID was 6"
+  // If ID = 7 then return "ID was 7"
   //
   // We ignore the port because we have one context, but we could use it to index an array of
   // contexts in a bigger application.
@@ -459,10 +464,31 @@ void min_application_handler(struct min_context *self, uint8_t min_id, uint8_t c
   min_debug_print(min_id);
   min_debug_print(" received at %d\n", millis());
   min_debug_print(millis());
-  min_id++;
+  char *message;
+  uint8_t payloadLength;
+  switch(min_id)
+  {
+    case 0x05:
+        message = "ID was 5";
+        payloadLength = sizeof(message);
+        min_send_frame(self, min_id, min_payload, len_payload);
+        break;
+    case 0x06:
+        message = "ID was 6";
+        payloadLength = sizeof(message)/sizeof(message[0]);
+        min_send_frame(self, min_id, message, sizeof(message));
+        break;
+    case 0x07:
+        message = "ID was 7";
+        payloadLength = sizeof(message);
+        min_send_frame(self, min_id, message, 8);
+        break;
+    default:
+        break;
+  }
   // The frame echoed back doesn't go through the transport protocol: it's send back directly
   // as a datagram (and could be lost if there were noise on the serial line).
-  min_send_frame(self, min_id, min_payload, len_payload);
+  // min_send_frame(self, min_id, min_payload, len_payload);
 }
 
 static void rx_byte(struct min_context *self, uint8_t byte) // receive byte on the wire
@@ -571,6 +597,7 @@ static void rx_byte(struct min_context *self, uint8_t byte) // receive byte on t
     case RECEIVING_EOF:
         if (byte == 0x55u) {
             // Frame received OK, pass up data to handler
+            //send_ack(self);
             valid_frame_received(self);
         } else {
             // else discard
