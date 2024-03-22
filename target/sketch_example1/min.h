@@ -63,6 +63,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <Arduino.h>
 
 #ifdef ASSERTION_CHECKING
 #include <assert.h>

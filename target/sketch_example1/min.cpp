@@ -3,7 +3,6 @@
 // Use authorized under the MIT license.
 
 #include "min.h"
-//#include <Arduino.h>
 
 //#define MIN_DEBUG_PRINTING
 #define TRANSPORT_FIFO_SIZE_FRAMES_MASK ((uint8_t)((1U << TRANSPORT_FIFO_SIZE_FRAMES_BITS) - 1U))
@@ -465,8 +464,8 @@ void min_application_handler(struct min_context *self, uint8_t min_id, uint8_t c
   min_debug_print(" received at %d\n", millis());
   min_debug_print(millis());
   char *message;
-  char toSend[32] = "";
-  char* send;
+  char toSend[32];
+  char *send;
   uint8_t payloadLength = 0;
   uint8_t length = 0;
   uint8_t n1, n2, n3;
@@ -478,10 +477,11 @@ void min_application_handler(struct min_context *self, uint8_t min_id, uint8_t c
         n1 = 4;
         n2 = 5;
         n3 = n1*n2;
-        strcpy(toSend, "ID was 5");
-        strcat(toSend, " and 6. n3 = ");
-        strcat(toSend, n3);
-        strcat(toSend, "\0");
+        strcpy(toSend, "datagram. ID was 5");
+        //Serial.println("test");
+        //strcat(toSend, " and 6. n3 = ");
+        //strcat(toSend, (char) n3);
+        //strcat(toSend, "\0");
         send = (char*)malloc(sizeof(toSend)*sizeof(char));
         send = toSend;
         min_send_frame(self, min_id, (uint8_t *)send, strlen(send));
@@ -490,11 +490,13 @@ void min_application_handler(struct min_context *self, uint8_t min_id, uint8_t c
         message = "ID was 6";
         payloadLength = strlen(message);
         min_send_frame(self, min_id, message, payloadLength);
+        //min_queue_frame(self, min_id, message, payloadLength);
         break;
     case 0x07:
         message = "ID was 7";
         payloadLength = strlen(message);
         min_send_frame(self, min_id, message, payloadLength);
+        //min_queue_frame(self, min_id, message, payloadLength);
         break;
     default:
         break;
