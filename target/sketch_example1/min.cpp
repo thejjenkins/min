@@ -52,7 +52,7 @@ enum {
     // Top bit must be set: these are for the transport protocol to use
     // 0x7f and 0x7e are reserved MIN identifiers.
     ACK = 0xffU,
-    RESET = 0xfeU,
+    rRESET = 0xfeU,
 };
 
 // Where the payload data of the frame FIFO is stored
@@ -240,7 +240,7 @@ static void send_reset(struct min_context *self)
 {
     min_debug_print("send RESET\n");
     if (ON_WIRE_SIZE(0) <= min_tx_space(self->port)) {
-        on_wire_bytes(self, RESET, 0, 0, 0, 0, 0);
+        on_wire_bytes(self, rRESET, 0, 0, 0, 0, 0);
     }
 }
 
@@ -394,7 +394,7 @@ static void valid_frame_received(struct min_context *self)
             self->transport_fifo.spurious_acks++;
         }
         break;
-    case RESET:
+    case rRESET:
         // If we get a RESET demand then we reset the transport protocol (empty the FIFO, reset the
         // sequence numbers, etc.)
         // We don't send anything, we just do it. The other end can send frames to see if this end is
@@ -478,19 +478,19 @@ void min_application_handler(struct min_context *self, uint8_t min_id, uint8_t c
         n3 = n1*n2;
         length_toSend = snprintf(toSend, MAX_PAYLOAD, "ID was 5. %d*%d = %d", n1, n2, n3);
         //min_send_frame(self, min_id, toSend, strlen(toSend));
-        min_queue_frame(self, min_id, toSend, length_toSend);
+        min_queue_frame(self, min_id, (uint8_t *)toSend, length_toSend);
         break;
     case 0x06:
         message = "ID was 6. this is more than 32 bytes. no this is..";
         //message = "ID was 6";
         payloadLength = strlen(message);
-        min_send_frame(self, min_id, message, payloadLength);
+        min_send_frame(self, min_id, (uint8_t *)message, payloadLength);
         //min_queue_frame(self, min_id, message, payloadLength);
         break;
     case 0x07:
         message = "ID was 7";
         payloadLength = strlen(message);
-        min_send_frame(self, min_id, message, payloadLength);
+        min_send_frame(self, min_id, (uint8_t *)message, payloadLength);
         //min_queue_frame(self, min_id, message, payloadLength);
         break;
     default:

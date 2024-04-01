@@ -16,8 +16,7 @@
 // to use a Makefile or IDE project file if the application is to be written in C.
 
 #include "min.h"
-#include <AltSoftSerial.h>
-AltSoftSerial altSerial;
+HardwareSerial Serial1(PA10, PA9);
 
 // A MIN context (we only have one because we're going to use a single port).
 // MIN 2.0 supports multiple contexts, each on a separate port, but in this example
@@ -36,7 +35,7 @@ uint16_t min_tx_space(uint8_t port)
   // Ignore 'port' because we have just one context. But in a bigger application
   // with multiple ports we could make an array indexed by port to select the serial
   // port we need to use.
-  uint16_t n = Serial.availableForWrite();
+  uint16_t n = Serial1.availableForWrite();
 
   return n;
 }
@@ -45,7 +44,7 @@ uint16_t min_tx_space(uint8_t port)
 void min_tx_byte(uint8_t port, uint8_t byte)
 {
   // Ignore 'port' because we have just one context.
-  altSerial.write(&byte, 1U);  
+  Serial1.write(&byte, 1U);  
 }
 
 // Tell MIN the current time in milliseconds.
@@ -82,13 +81,13 @@ void setup() {
   while(!Serial) {
     ; // Wait for serial port
   }
-  altSerial.begin(9600);
-  altSerial.flush();
+  Serial1.begin(9600);
+  Serial1.flush();
   //while(!altSerial){;}
 
   // Initialize the single context. Since we are going to ignore the port value we could
   // use any value. But in a bigger program we would probably use it as an index.
-  min_init_context(&min_ctx, &altSerial);
+  min_init_context(&min_ctx, Serial1);
 
   last_sent = millis();
   //altSerial.println("Testing min_ctx port:");
@@ -101,15 +100,15 @@ void loop() {
   size_t buf_len;
 
   // Read some bytes from the USB serial port..
-  if(altSerial.available() > 0) {
+  if(Serial1.available() > 0) {
     //Serial.println("Working?");
-    buf_len = altSerial.readBytes(buf, 32U);
-    altSerial.flush();
+    buf_len = Serial1.readBytes(buf, 32U);
+    Serial1.flush();
     //Serial.println(buf);
   }
   else {
     buf_len = 0;
-    altSerial.flush();
+    Serial1.flush();
   }
   // .. and push them into MIN. It doesn't matter if the bytes are read in one by
   // one or in a chunk (other than for efficiency) so this can match the way in which
