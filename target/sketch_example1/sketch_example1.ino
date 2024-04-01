@@ -121,8 +121,8 @@ void loop() {
   uint32_t now = millis();
   // // Use modulo arithmetic so that it will continue to work when the time value wraps
   if (now - last_sent > 2000U) {
-    // Serial.println(min_ctx.rx_frame_id_control);
-    // Serial.println(min_ctx.rx_frame_seq);
+    //Serial.println(min_ctx.rx_frame_id_control);
+    //Serial.println(min_ctx.rx_frame_seq);
     // Serial.println(min_ctx.transport_fifo.rn);
     // Serial.println(min_ctx.transport_fifo.n_frames);
     // Send a MIN frame with ID 0x33 (51 in decimal) and with a 4 byte payload of the 

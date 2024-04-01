@@ -464,30 +464,25 @@ void min_application_handler(struct min_context *self, uint8_t min_id, uint8_t c
   min_debug_print(" received at %d\n", millis());
   min_debug_print(millis());
   char *message;
-  char toSend[32];
-  char *send;
+  char toSend[MAX_PAYLOAD];
+  int length_toSend;
+  //char *send;
   uint8_t payloadLength = 0;
-  uint8_t length = 0;
+  // uint8_t length = 0;
   uint8_t n1, n2, n3;
   switch(min_id)
   {
     case 0x05:
-        //message = "ID was 5";
-        //payloadLength = sizeof(toSend);
         n1 = 4;
         n2 = 5;
         n3 = n1*n2;
-        strcpy(toSend, "datagram. ID was 5");
-        //Serial.println("test");
-        //strcat(toSend, " and 6. n3 = ");
-        //strcat(toSend, (char) n3);
-        //strcat(toSend, "\0");
-        send = (char*)malloc(sizeof(toSend)*sizeof(char));
-        send = toSend;
-        min_send_frame(self, min_id, (uint8_t *)send, strlen(send));
+        length_toSend = snprintf(toSend, MAX_PAYLOAD, "ID was 5. %d*%d = %d", n1, n2, n3);
+        //min_send_frame(self, min_id, toSend, strlen(toSend));
+        min_queue_frame(self, min_id, toSend, length_toSend);
         break;
     case 0x06:
-        message = "ID was 6";
+        message = "ID was 6. this is more than 32 bytes. no this is..";
+        //message = "ID was 6";
         payloadLength = strlen(message);
         min_send_frame(self, min_id, message, payloadLength);
         //min_queue_frame(self, min_id, message, payloadLength);
@@ -503,7 +498,7 @@ void min_application_handler(struct min_context *self, uint8_t min_id, uint8_t c
   }
   // The frame echoed back doesn't go through the transport protocol: it's send back directly
   // as a datagram (and could be lost if there were noise on the serial line).
-  // min_send_frame(self, min_id, min_payload, len_payload);
+  //min_send_frame(self, min_id, min_payload, len_payload);
 }
 
 static void rx_byte(struct min_context *self, uint8_t byte) // receive byte on the wire
