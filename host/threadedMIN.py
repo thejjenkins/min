@@ -38,7 +38,13 @@ if __name__ == "__main__":
     min_id = 0x05
     while True:
         #payload = bytes("hello world {}".format(time()), encoding='ascii')
-        payload = bytes("hi UNO", encoding='ascii')
+        # if min_id == 0x05:
+        #     payload = bytes("hi STM32L476RG", encoding='ascii')
+        # elif min_id == 0x06:
+        #     payload = bytes("sent from PC", encoding='ascii')
+        # elif min_id == 0x07:
+        #     payload = bytes("resetting MIN ID back to 5", encoding='ascii')
+        payload = bytes("hi STM32L476RG", encoding='ascii')
         min_handler.queue_frame(min_id=min_id, payload=payload)
         # i am sending three different MIN IDs to the UNO.
         # the UNO code will respond to each MIN ID differently
@@ -51,9 +57,14 @@ if __name__ == "__main__":
             #     print("(Time = {})".format(bytes_to_int32(frame.payload, big_endian=False)))
             # elif frame.min_id == 0xFF:
             #     print("ACK received")
-            print("Frame received: min ID={}".format(frame.min_id))
+            #print("Frame received: min ID={}".format(frame.min_id))
+            print("Sending MIN ID = {}".format(min_id))
             if frame.min_id == min_id:
-                print("(In ASCII: '{}')".format(frame.payload))
+                print("Sequence number sent = {}".format(min_handler._sn_max - 1))
+                print("Sending payload = {}".format(payload))
+                print("(Payload received: '{}')".format(frame.payload))
+                print("")
+                #print("Payload length received = {}".format(len(frame.payload)))
             elif frame.min_id == 0x33:
                 print("(Time = {})".format(bytes_to_int32(frame.payload, big_endian=False)))
             elif frame.min_id == 0xFF:

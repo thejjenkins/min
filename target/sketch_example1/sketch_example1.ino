@@ -16,7 +16,8 @@
 // to use a Makefile or IDE project file if the application is to be written in C.
 
 #include "min.h"
-HardwareSerial Serial1(PA10, PA9);
+HardwareSerial Serial1(USART1);
+//HardwareSerial Serial2(USART2);
 
 // A MIN context (we only have one because we're going to use a single port).
 // MIN 2.0 supports multiple contexts, each on a separate port, but in this example
@@ -77,11 +78,11 @@ uint32_t min_time_ms(void)
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
-  while(!Serial) {
+  Serial2.begin(115200);
+  while(!Serial2) {
     ; // Wait for serial port
   }
-  Serial1.begin(9600);
+  Serial1.begin(11500);
   Serial1.flush();
   //while(!altSerial){;}
 
@@ -121,7 +122,7 @@ void loop() {
   // // Use modulo arithmetic so that it will continue to work when the time value wraps
   if (now - last_sent > 2000U) {
     //Serial.println(min_ctx.rx_frame_id_control);
-    //Serial.println(min_ctx.rx_frame_seq);
+    //Serial2.flush();
     // Serial.println(min_ctx.transport_fifo.rn);
     // Serial.println(min_ctx.transport_fifo.n_frames);
     // Send a MIN frame with ID 0x33 (51 in decimal) and with a 4 byte payload of the 

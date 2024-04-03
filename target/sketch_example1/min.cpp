@@ -476,22 +476,42 @@ void min_application_handler(struct min_context *self, uint8_t min_id, uint8_t c
         n1 = 4;
         n2 = 5;
         n3 = n1*n2;
-        length_toSend = snprintf(toSend, MAX_PAYLOAD, "ID was 5. %d*%d = %d", n1, n2, n3);
+        length_toSend = snprintf(toSend, MAX_PAYLOAD, "ID was 5. %d*%d = %d. This message is snprintf.... 54", n1, n2, n3);
+
+        Serial2.print("\nMIN ID received: ");Serial2.print(min_id);
+        Serial2.print("\nSequence number received: ");Serial2.print(self->rx_frame_seq);
+        Serial2.print("\nPayload received: ");Serial2.print((char*)min_payload);
+        Serial2.print("\nSending payload: ");Serial2.print(toSend);
+        Serial2.print("\n");
+
         //min_send_frame(self, min_id, toSend, strlen(toSend));
         min_queue_frame(self, min_id, (uint8_t *)toSend, length_toSend);
         break;
     case 0x06:
-        message = "ID was 6. this is more than 32 bytes. no this is..";
-        //message = "ID was 6";
+        message = "ID was 6";
+        // This is a string literal declared as char* message; Payload is 83 bytes.
+
+        Serial2.print("\nMIN ID received: ");Serial2.print(min_id);
+        Serial2.print("\nSequence number received: ");Serial2.print(self->rx_frame_seq);
+        Serial2.print("\nPayload received: ");Serial2.print((char*)min_payload);
+        Serial2.print("\nSending payload: ");Serial2.print(message);
+        Serial2.print("\n");
+
         payloadLength = strlen(message);
-        min_send_frame(self, min_id, (uint8_t *)message, payloadLength);
-        //min_queue_frame(self, min_id, message, payloadLength);
+        min_queue_frame(self, min_id, (uint8_t *)message, payloadLength);
         break;
     case 0x07:
-        message = "ID was 7";
+        message = "ID was 7. String literal. 31 B";
         payloadLength = strlen(message);
-        min_send_frame(self, min_id, (uint8_t *)message, payloadLength);
-        //min_queue_frame(self, min_id, message, payloadLength);
+        //min_send_frame(self, min_id, (uint8_t *)message, payloadLength);
+
+        Serial2.print("\nMIN ID received: ");Serial2.print(min_id);
+        Serial2.print("\nSequence number received: ");Serial2.print(self->rx_frame_seq);
+        Serial2.print("\nPayload received: ");Serial2.print((char*)min_payload);
+        Serial2.print("\nSending payload: ");Serial2.print(message);
+        Serial2.print("\n");
+
+        min_queue_frame(self, min_id, (uint8_t *)message, payloadLength);
         break;
     default:
         break;
