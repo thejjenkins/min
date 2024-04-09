@@ -23,11 +23,11 @@ def wait_for_frames(min_handler: ThreadsafeTransportMINSerialHandler):
         # The polling will generally block waiting for characters on a timeout
         # How much CPU time this takes depends on the Python serial implementation
         # on the target machine
-        # min_id = input("Enter MIN ID between 0-63 or 254 for RESET: ")
-        # mainMINFrame.min_id = int(min_id)
-        # payload = input("Enter payload: ")
-        # mainMINFrame.payload = bytes(payload, encoding='ascii')
-        # min_handler.queue_frame(min_id=mainMINFrame.min_id, payload=mainMINFrame.payload)
+        min_id = input("Enter MIN ID between 0-63 or 254 for RESET: ")
+        mainMINFrame.min_id = int(min_id)
+        payload = input("Enter payload: ")
+        mainMINFrame.payload = bytes(payload, encoding='ascii')
+        min_handler.queue_frame(min_id=mainMINFrame.min_id, payload=mainMINFrame.payload)
         frames = min_handler.poll()
         if frames:
             return frames
@@ -38,14 +38,8 @@ if __name__ == "__main__":
     min_id = 0x05
     while True:
         #payload = bytes("hello world {}".format(time()), encoding='ascii')
-        # if min_id == 0x05:
-        #     payload = bytes("hi STM32L476RG", encoding='ascii')
-        # elif min_id == 0x06:
-        #     payload = bytes("sent from PC", encoding='ascii')
-        # elif min_id == 0x07:
-        #     payload = bytes("resetting MIN ID back to 5", encoding='ascii')
-        payload = bytes("hi STM32L476RG", encoding='ascii')
-        min_handler.queue_frame(min_id=min_id, payload=payload)
+        #payload = bytes("hi STM32L476RG", encoding='ascii')
+        #min_handler.queue_frame(min_id=min_id, payload=payload)
         # i am sending three different MIN IDs to the UNO.
         # the UNO code will respond to each MIN ID differently
 
@@ -58,10 +52,10 @@ if __name__ == "__main__":
             # elif frame.min_id == 0xFF:
             #     print("ACK received")
             #print("Frame received: min ID={}".format(frame.min_id))
-            print("Sending MIN ID = {}".format(min_id))
-            if frame.min_id == min_id:
-                print("Sequence number sent = {}".format(min_handler._sn_max - 1))
-                print("Sending payload = {}".format(payload))
+            # print("Sending MIN ID = {}".format(mainMINFrame.min_id))
+            if frame.min_id == mainMINFrame.min_id:
+                # print("Sequence number sent = {}".format(min_handler._sn_max - 1))
+                # print("Sending payload = {}".format(mainMINFrame.payload))
                 print("(Payload received: '{}')".format(frame.payload))
                 print("")
                 #print("Payload length received = {}".format(len(frame.payload)))
