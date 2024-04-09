@@ -52,7 +52,7 @@ enum {
     // Top bit must be set: these are for the transport protocol to use
     // 0x7f and 0x7e are reserved MIN identifiers.
     ACK = 0xffU,
-    rRESET = 0xfeU,
+    rRESET = 0xfeU, // i named this rRESET because STM threw an error if it was named RESET
 };
 
 // Where the payload data of the frame FIFO is stored
@@ -104,6 +104,8 @@ static void stuffed_tx_byte(struct min_context *self, uint8_t byte, bool crc)
 void min_tx_start(uint8_t port){};
 void min_tx_finished(uint8_t port){};
 
+// on_wire_bytes is the data link layer.
+// Data link layer is responsible for grouping 1's/0's into chunks called Frames
 static void on_wire_bytes(struct min_context *self, uint8_t id_control, uint8_t seq, uint8_t const *payload_base, uint16_t payload_offset, uint16_t payload_mask, uint8_t payload_len)
 {
     uint8_t n, i;
@@ -465,6 +467,7 @@ void min_application_handler(struct min_context *self, uint8_t min_id, uint8_t c
   min_debug_print(millis());
   char *message;
   char toSend[MAX_PAYLOAD];
+  char debugMsg[255U];
   int length_toSend;
   //char *send;
   uint8_t payloadLength = 0;
@@ -480,7 +483,9 @@ void min_application_handler(struct min_context *self, uint8_t min_id, uint8_t c
 
         Serial2.print("\nMIN ID received: ");Serial2.print(min_id);
         Serial2.print("\nSequence number received: ");Serial2.print(self->rx_frame_seq);
-        Serial2.print("\nPayload received: ");Serial2.print((char*)min_payload);
+        Serial2.print("\nPayload length received: ");Serial2.print(self->rx_frame_payload_bytes);
+        snprintf(debugMsg, self->rx_frame_payload_bytes+1, (char*)min_payload);
+        Serial2.print("\nPayload received: ");Serial2.print(debugMsg);
         Serial2.print("\nSending payload: ");Serial2.print(toSend);
         Serial2.print("\n");
 
@@ -493,7 +498,9 @@ void min_application_handler(struct min_context *self, uint8_t min_id, uint8_t c
 
         Serial2.print("\nMIN ID received: ");Serial2.print(min_id);
         Serial2.print("\nSequence number received: ");Serial2.print(self->rx_frame_seq);
-        Serial2.print("\nPayload received: ");Serial2.print((char*)min_payload);
+        Serial2.print("\nPayload length received: ");Serial2.print(self->rx_frame_payload_bytes);
+        snprintf(debugMsg, self->rx_frame_payload_bytes+1, (char*)min_payload);
+        Serial2.print("\nPayload received: ");Serial2.print(debugMsg);
         Serial2.print("\nSending payload: ");Serial2.print(message);
         Serial2.print("\n");
 
@@ -507,13 +514,26 @@ void min_application_handler(struct min_context *self, uint8_t min_id, uint8_t c
 
         Serial2.print("\nMIN ID received: ");Serial2.print(min_id);
         Serial2.print("\nSequence number received: ");Serial2.print(self->rx_frame_seq);
-        Serial2.print("\nPayload received: ");Serial2.print((char*)min_payload);
+        Serial2.print("\nPayload length received: ");Serial2.print(self->rx_frame_payload_bytes);
+        snprintf(debugMsg, self->rx_frame_payload_bytes+1, (char*)min_payload);
+        Serial2.print("\nPayload received: ");Serial2.print(debugMsg);
         Serial2.print("\nSending payload: ");Serial2.print(message);
         Serial2.print("\n");
 
         min_queue_frame(self, min_id, (uint8_t *)message, payloadLength);
         break;
     default:
+        length_toSend = snprintf(toSend, MAX_PAYLOAD, "ID was %d", min_id);
+
+        Serial2.print("\nMIN ID received: ");Serial2.print(min_id);
+        Serial2.print("\nSequence number received: ");Serial2.print(self->rx_frame_seq);
+        Serial2.print("\nPayload length received: ");Serial2.print(self->rx_frame_payload_bytes);
+        snprintf(debugMsg, self->rx_frame_payload_bytes+1, (char*)min_payload);
+        Serial2.print("\nPayload received: ");Serial2.print(debugMsg);
+        Serial2.print("\nSending payload: ");Serial2.print(toSend);
+        Serial2.print("\n");
+
+        min_queue_frame(self, min_id, (uint8_t *)toSend, length_toSend);
         break;
   }
   // The frame echoed back doesn't go through the transport protocol: it's send back directly
