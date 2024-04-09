@@ -288,6 +288,9 @@ class MINTransport:
             frame = MINFrame(
                 min_id=min_id, payload=payload, seq=self._sn_max, transport=True
             )
+            print("Sending MIN ID = {}".format(frame.min_id))
+            print("Sequence number sent = {}".format(frame.seq))
+            print("Sending payload = {}".format(frame.payload))
             self._transport_fifo.append(frame)
         else:
             self._dropped_frames += 1
