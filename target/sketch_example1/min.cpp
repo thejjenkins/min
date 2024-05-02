@@ -455,9 +455,6 @@ static void valid_frame_received(struct min_context *self)
 void min_application_handler(struct min_context *self, uint8_t min_id, uint8_t const *min_payload, uint8_t len_payload, uint8_t port)
 {
   // In this example we examine the MIN ID and perform an action based on its value.
-  // If ID = 5 then return "ID was 5"
-  // If ID = 6 then return "ID was 6"
-  // If ID = 7 then return "ID was 7"
   //
   // We ignore the port because we have one context, but we could use it to index an array of
   // contexts in a bigger application.
@@ -467,11 +464,9 @@ void min_application_handler(struct min_context *self, uint8_t min_id, uint8_t c
   min_debug_print(millis());
   char *message;
   char toSend[MAX_PAYLOAD];
-  char debugMsg[255U];
+  char debugMsg[MAX_PAYLOAD];
   int length_toSend;
-  //char *send;
   uint8_t payloadLength = 0;
-  // uint8_t length = 0;
   uint8_t n1, n2, n3;
   switch(min_id)
   {
@@ -494,7 +489,6 @@ void min_application_handler(struct min_context *self, uint8_t min_id, uint8_t c
         break;
     case 0x06:
         message = "ID was 6";
-        // This is a string literal declared as char* message; Payload is 83 bytes.
 
         Serial2.print("\nMIN ID received: ");Serial2.print(min_id);
         Serial2.print("\nSequence number received: ");Serial2.print(self->rx_frame_seq);
