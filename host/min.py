@@ -799,7 +799,7 @@ class MINTransportSerial(MINTransport):
     def _serial_close(self):
         self._serial.close()
 
-    def __init__(self, port, baudrate=11500, loglevel=ERROR):
+    def __init__(self, port, baudrate=115200, loglevel=ERROR):
         """
         Open MIN connection on a given port.
         :param port: serial port
