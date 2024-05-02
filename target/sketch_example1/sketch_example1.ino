@@ -1,14 +1,15 @@
 //
-// Example program for the Arduino UNO
+// Example program for the STM32L476RG 
 //
-// Uses Serial for programming the board and debug printing, and altSoftSerial for
+// Uses Serial2 for programming the board and debug printing, and Serial1 for
 // running the MIN protocol. A programming running on a PC in Python is used to
 // exercise this code.
 //
 // The example does the following:
 //
-// Every 1 second it sends a MIN frame with ID 51 (0x33) using the transport protocol.
-// Every incoming MIN frame is echoed back with the same payload but an ID 1 bigger.
+// Every 2 seconds the Python program on the host will send a frame and this program
+// will respond to each frame ID uniquely. The min.cpp file contains the min_application_handler
+// function which handles each frame ID and how to respond. 
 //
 // See also the Python program that runs on the host.
 
@@ -16,8 +17,8 @@
 // to use a Makefile or IDE project file if the application is to be written in C.
 
 #include "min.h"
-HardwareSerial Serial1(USART1);
-//HardwareSerial Serial2(USART2);
+HardwareSerial Serial1(USART1); // STM32L476RG uses PA10(RX)/PA9(TX) for serial 1.
+//HardwareSerial Serial2(USART2); // STM32L476RG uses the micro USB connection as serial 2
 
 // A MIN context (we only have one because we're going to use a single port).
 // MIN 2.0 supports multiple contexts, each on a separate port, but in this example
@@ -59,13 +60,9 @@ uint32_t min_time_ms(void)
 // // duplicates will have been eliminated).
 // void min_application_handler(struct min_ctx, uint8_t min_id, uint8_t const *min_payload, uint8_t len_payload, uint8_t port)
 // {
-//   // In this example we examine the MIN ID and perform an action based on its value.
-//   // If ID = 5 then return "ID was 5"
-//   // If ID = 6 then return "ID was 6"
-//   // If ID = 7 then return "ID was 7"
-//   //
 //   // We ignore the port because we have one context, but we could use it to index an array of
 //   // contexts in a bigger application.
+//   // This simple example receives the min_id, adds 1 to it, then immediately sends it back as a datagram
 //   Serial.println("MIN frame with ID %d", min_id);
 //   Serial.println(min_id);
 //   Serial.println(" received at %d\n", millis());
@@ -82,17 +79,13 @@ void setup() {
   while(!Serial2) {
     ; // Wait for serial port
   }
-  Serial1.begin(11500);
-  Serial1.flush();
-  //while(!altSerial){;}
+  Serial1.begin(115200);
 
   // Initialize the single context. Since we are going to ignore the port value we could
   // use any value. But in a bigger program we would probably use it as an index.
   min_init_context(&min_ctx, Serial1);
 
   last_sent = millis();
-  //altSerial.println("Testing min_ctx port:");
-  //altSerial.println(min_ctx.port);
   delay(1000);
 }
 
@@ -102,14 +95,13 @@ void loop() {
 
   // Read some bytes from the USB serial port..
   if(Serial1.available() > 0) {
-    //Serial.println("Working?");
     buf_len = Serial1.readBytes(buf, 32U);
-    Serial1.flush();
-    //Serial.println(buf);
+    //Serial1.flush();
+    //Serial2.println(buf);
   }
   else {
     buf_len = 0;
-    Serial1.flush();
+    //Serial1.flush();
   }
   // .. and push them into MIN. It doesn't matter if the bytes are read in one by
   // one or in a chunk (other than for efficiency) so this can match the way in which
@@ -120,17 +112,12 @@ void loop() {
   // Every 1s send a MIN frame using the reliable transport stream.
   uint32_t now = millis();
   // // Use modulo arithmetic so that it will continue to work when the time value wraps
-  if (now - last_sent > 2000U) {
-    //Serial.println(min_ctx.rx_frame_id_control);
-    //Serial2.flush();
-    // Serial.println(min_ctx.transport_fifo.rn);
-    // Serial.println(min_ctx.transport_fifo.n_frames);
+  if (now - last_sent > 1000U) {
     // Send a MIN frame with ID 0x33 (51 in decimal) and with a 4 byte payload of the 
     // the current time in milliseconds. The payload will be in this machine's
     // endianness - i.e. little endian - and so the host code will need to flip the bytes
     // around to decode it. It's a good idea to stick to MIN network ordering (i.e. big
     // endian) for payload words but this would make this example program more complex.
-    //Serial.println(min_ctx.transport_fifo.n_frames);
     // if(!min_queue_frame(&min_ctx, 0x33U, (uint8_t *)&now, 4U)) {
     //   // The queue has overflowed for some reason
     //   Serial.print("Can't queue at time ");
